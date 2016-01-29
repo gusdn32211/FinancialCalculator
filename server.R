@@ -1,12 +1,8 @@
 library(shiny)
 library(ggplot2)
+library(shinydashboard)
 
 shinyServer(function(input, output) {
-  
-  #Table View
-  data<- eventReactive(input$table,{
-    runif()
-  })
   
   output$view <- renderTable({
     
@@ -143,7 +139,7 @@ shinyServer(function(input, output) {
     h <- ggplot(dataSet, aes(Year, Balance,
                              width = .9)) + geom_bar(aes(fill = Year), stat =
                                                        "identity", position = "identity")
-    h + xlab("Time in Years") + theme(axis.title.y = element_text(angle = 0)) + ylab("Balance") + ggtitle("Debt Balance Relative to Time") + theme(plot.title = element_text(size = 20,
+    h + xlab("Time (Years)") + ylab("Balance ($)") + ggtitle("Debt Balance Relative to Time") + theme(plot.title = element_text(size = 20,
       lineheight = 1.6,
       face = "bold"
     )) + guides(fill = FALSE)
