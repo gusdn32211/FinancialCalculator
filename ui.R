@@ -10,12 +10,17 @@ sidebar <- dashboardSidebar(
 )
 
 dropdown <- dropdownMenu(
+  
   type = "messages",
   messageItem(
     from = "System",
     message = "Welcome User.",
     icon = icon("smile-o"),
-    time = Sys.Date()
+    time = Sys.Date(),
+    singleton(
+      tags$head(tags$script(src = "message-handler.js"))
+    )
+
   )
 )
 
@@ -37,14 +42,19 @@ body <- dashboardBody(
         textInput("Loan", "Amount", 1000),
         
         sliderInput("InterestRate", "Please Select the Interest Rate: ",
-                    min=0, max=20, value=5, step=1),
-        
+                    min=0, max=20, value=5, step=.1),
+
         sliderInput("Years", "Please Select the Number of Years: ",
-                    min=0, max=100, value=20, step=1),
+                    min=0, max=50, value=20, step=1),
         
         selectInput("TimeLength", "Please Select Timeframe",
                     choices = c("Annually", "Semi-Annual", "Quarterly", "Monthly")),
+        fluidRow(
+          column (width = 5),
+          column (width = 7,
         downloadButton('downloadData', 'Download')
+          )
+        )
       ),
       
       box(
@@ -64,75 +74,137 @@ body <- dashboardBody(
     
     tabItem(
       tabName = "calculations",
-      box(
-        width  = 12,
-        solidHeader = TRUE,
-        status = "primary",
+      fluidRow(
+        box(
+          width  = 12,
+          solidHeader = TRUE,
+          status = "primary",
+          fluidRow(
             tabBox(
               title = tagList(shiny::icon("balance-scale"), "Calculations"),
               width = 12,
               tabPanel("PV/FV Calculator",
                        fluidRow(
-                         box(
+                         column(
                            width = 4,
-                           title = "Calculator",
-                           solidHeader = TRUE,
-                           collapsible = TRUE,
-                           status = "primary",
+                           box(
+                             width = 13,
+                             title = "Calculator",
+                             solidHeader = TRUE,
+                             collapsible = TRUE,
+                             status = "primary",
                   
-                           textInput("calc-input", "Amount", 1000),
-                  
-                           sliderInput("calc-interest", "Please Select the Interest Rate: ",
-                            min=0, max=20, value=5, step=1),
-                           
-                           sliderInput("calc-year", "Please Select the Number of Years: ",
-                            min = 0, max = 100, value = 5, step = 1)
-                           
+                             textInput("calc-input", "Amount", 1000),
+                             
+                             sliderInput("calc-interest", "Please Select the Interest Rate: ",
+                                         min = 0, max = 20, value = 5, step = .1),
+                             
+                             sliderInput("calc-year", "Please Select the Number of Years: ",
+                                         min = 0, max = 50, value = 5, step = 1)
+                           )
                          ),
-                         box(
+                        
+                         column(
                            width = 4,
-                           solidHeader = TRUE,
-                           collapsible = TRUE,
-                           status = "warning",
-                           title = "Present Value",
-                           verbatimTextOutput("present_text")
+                           box(
+                             width = 13,
+                             solidHeader = TRUE,
+                             collapsible = TRUE,
+                             status = "warning",
+                             title = "Present Value",
+                             verbatimTextOutput("present_text")
+                           ),
+                           box(
+                             width = 13,
+                             solidHeader = TRUE,
+                             collapsible = TRUE,
+                             status = "danger",
+                             title = "Future Value",
+                             verbatimTextOutput("future_text")
+                           )
                          ),
-                         box(
+                         column(
                            width = 4,
-                           solidHeader = TRUE,
-                           collapsible = TRUE,
-                           status = "danger",
-                           title = "Future Value",
-                           verbatimTextOutput("future_text")
+                           infoBoxOutput(width= 13, "pvamount"),
+                           infoBoxOutput(width= 13,"pvinterest"),
+                           infoBoxOutput(width= 13,"pvyears")
+                         )
+                         
+                       )
+              ), 
+              tabPanel("Return Calculator",
+                       fluidRow(
+                         column(
+                           width = 4,
+                           box(
+                             width = 13,
+                             title = "Calculator",
+                             solidHeader = TRUE,
+                             collapsible = TRUE,
+                             status = "primary",
+                             
+                             textInput("return-input-pv", "Present Value: ", 1000),
+                             textInput("return-input-fv", "Future Value: ", 1200),
+                             textInput("return-year", "Please Select the Number of Years: ", 5)
+                           )
+                         ), 
+                         column(
+                           width = 4,
+                           box(
+                             width = 13,
+                             solidHeader = TRUE,
+                             collapsible = TRUE,
+                             status = "info",
+                             title = "Rate of Return",
+                             verbatimTextOutput("return_text")
+                           )
+                         ), 
+                         column(width = 4,
+                                infoBoxOutput(width= 13, "returnPresentValue"),
+                                infoBoxOutput(width= 13, "returnFutureValue"),
+                                infoBoxOutput(width= 13, "returnYears")
                          )
                        )
               ),
-              tabPanel("Return",
+              tabPanel("Period Calculator",
                        fluidRow(
-                         box(
+                         column(
                            width = 4,
-                           title = "Calculator",
-                           solidHeader = TRUE,
-                           collapsible = TRUE,
-                           status = "primary",
-                           
-                           textInput("return-input-pv", "Present Value: ", 1000),
-                           textInput("return-input-fv", "Future Value: ", 1200),
-                           textInput("return-year", "Please Select the Number of Years: ", 5)
-                           
+                           box(
+                             width = 13,
+                             title = "Calculator",
+                             solidHeader = TRUE,
+                             collapsible = TRUE,
+                             status = "primary",
+                             
+                             textInput("period-input-pv", "Present Value: ", 1000),
+                             textInput("period-input-fv", "Future Value: ", 1200),
+                             sliderInput("period-interest", "Please Select the Interest Rate: ",
+                                         min = 0, max = 20, value = 5, step = .1)                           )
                          ),
-                         box(
+                         column(
                            width = 4,
-                           solidHeader = TRUE,
-                           collapsible = TRUE,
-                           status = "info",
-                           title = "Rate of Return",
-                           verbatimTextOutput("return_text")
+                           box(
+                             width = 13,
+                             solidHeader = TRUE,
+                             collapsible = TRUE,
+                             status = "success",
+                             title = "Time Length",
+                             verbatimTextOutput("period_text")
+                           )
+                         ),
+                         column(width = 4,
+                                infoBoxOutput(width= 13, "periodPresentValue"),
+                                infoBoxOutput(width= 13, "periodFutureValue"),
+                                infoBoxOutput(width= 13, "periodInterest")
                          )
-                       )
-              )
-            )
-    )
+                       ) #fluidRow
+                       
+              ) #tabPanel
+              
+            ))
+        )
+      )
     ), 
     
     tabItem(tabName = "upload",
